@@ -1,8 +1,18 @@
 language: go
 
+services:
+  - docker
+
 go:
   - 1.14.x
 
 script:
   - go test -v ./...
   - CGO_ENABLED=0 go build -o demo
+
+  - echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+  - docker build -f Dockerfile -t otepe53/demo:latest ./
+  - GIT_SHA="$(git rev-parse --short HEAD)"
+  - docker tag otepe53/demo:latest otepe53/demo:$GIT_SHA
+  - docker push otepe53/demo:latest
+  - docker push otepe53/demo:$GIT_SHA
